@@ -44,6 +44,7 @@ class AppLoader
         }
 
         if ($cacheConfig && is_readable($cacheConfig)) {
+            $this->loadModules($appConfig['modules']);
             $config = include $cacheConfig;
         } else {
             $config['settings'] = array_reduce(
@@ -56,7 +57,7 @@ class AppLoader
 
             $config = $this->mergeArrays(
                 $config,
-                $this->getModuleConfigs($appConfig['modules'])
+                $this->loadModules($appConfig['modules'], true)
             );
         }
 
@@ -102,7 +103,7 @@ class AppLoader
         return $this->app;
     }
 
-    private function getModuleConfigs(array $modules)
+    private function loadModules(array $modules, $mergeConfigs = false)
     {
         $config = [];
         foreach ($modules as $module) {
@@ -114,8 +115,12 @@ class AppLoader
             if (!is_callable($moduleCallable)) {
                 throw new \Exception('No valid module');
             }
+
             $moduleConfig = call_user_func($moduleCallable, $this->app);
-            $config       = $this->mergeArrays($config, $moduleConfig);
+
+            if ($mergeConfigs) {
+                $config = $this->mergeArrays($config, $moduleConfig);
+            }
         }
 
         return $config;
