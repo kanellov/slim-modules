@@ -91,6 +91,9 @@ class AddToContainer
                 $extensionGroup = [$extensionGroup];
             }
             foreach ($extensionGroup as $extension) {
+                if (is_string($extension) && class_exists($extension)) {
+                    $extension = new $extension();
+                }
                 $container->extend($name, $extension);
             }
         }

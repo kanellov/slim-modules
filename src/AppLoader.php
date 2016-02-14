@@ -118,7 +118,7 @@ class AppLoader
 
             $moduleConfig = call_user_func($moduleCallable, $this->app);
 
-            if ($mergeConfigs) {
+            if ($mergeConfigs && is_array($moduleConfig)) {
                 $config = $this->mergeArrays($config, $moduleConfig);
             }
         }
