@@ -4,9 +4,50 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3eff84fce5488c8af1bd1e69d02be993",
-    "content-hash": "895523bd5909312005ba4d2b2706659d",
-    "packages": [],
+    "hash": "e9901efe96753a9ee10881f5d26c85c2",
+    "content-hash": "34bf7ba63ca24d78d8c88250d88ec7a6",
+    "packages": [
+        {
+            "name": "kanellov/php-events",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kanellov/php-events.git",
+                "reference": "985aa05d133c89cb44f577bb708f31ab4119b31f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kanellov/php-events/zipball/985aa05d133c89cb44f577bb708f31ab4119b31f",
+                "reference": "985aa05d133c89cb44f577bb708f31ab4119b31f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.*"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "events.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GNU GPLv3"
+            ],
+            "authors": [
+                {
+                    "name": "Vassilis Kanellopoulos",
+                    "email": "contact@kanellov.com",
+                    "homepage": "http://kanellov.com"
+                }
+            ],
+            "description": "A simple events manager",
+            "time": "2016-02-11 21:26:59"
+        }
+    ],
     "packages-dev": [
         {
             "name": "container-interop/container-interop",

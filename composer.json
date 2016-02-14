@@ -1,11 +1,11 @@
 {
-    "name": "kanellov/slim-skeleton",
-    "description": "Skeleton for Slim applications",
+    "name": "kanellov/slim-modules",
+    "description": "Tool for modular Slim applications",
     "type": "library",
     "keywords": [
         "slim framework", "library"
     ],
-    "homepage": "https://github.com/kanellov/slim-skeleton",
+    "homepage": "https://github.com/kanellov/slim-modules",
     "license": "GNU GPLv3",
     "authors": [
         {
@@ -16,11 +16,12 @@
     ],
     "support": {
         "email": "contact@kanellov.com",
-        "issues": "https://github.com/kanellov/slim-skeleton/issues",
-        "source": "https://github.com/kanellov/slim-skeleton"
+        "issues": "https://github.com/kanellov/slim-modules/issues",
+        "source": "https://github.com/kanellov/slim-modules"
     },
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=5.5.0",
+        "kanellov/php-events": "^2.0"
     },
     "require-dev": {
         "fabpot/php-cs-fixer": "1.*",
@@ -30,7 +31,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Knlv\\": "src/"
+            "Knlv\\Slim\\Modules\\": "src/"
         }
     }
 }
