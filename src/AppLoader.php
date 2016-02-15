@@ -59,13 +59,13 @@ class AppLoader
                 $config,
                 $this->loadModules($appConfig['modules'], true)
             );
-        }
 
-        if ($cacheConfig && is_writable(dirname($cacheConfig))) {
-            file_put_contents(
-                $cacheConfig,
-                '<?php return ' . var_export($config, true) . ';'
-            );
+            if ($cacheConfig && is_writable(dirname($cacheConfig))) {
+                file_put_contents(
+                    $cacheConfig,
+                    '<?php return ' . var_export($config, true) . ';'
+                );
+            }
         }
         $container['settings']['appConfig'] = $appConfig;
         $container['settings']['config']    = $config;
