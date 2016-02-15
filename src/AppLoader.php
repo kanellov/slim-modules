@@ -85,7 +85,6 @@ class AppLoader
         $addToContainer   = new AddToContainer();
         $addRoutes        = new AddRoutes();
         $addMiddleware    = new AddMiddleware();
-        $mergeArrays      = new MergeArrays();
 
         $addMiddleware(
             $addRoutes(
