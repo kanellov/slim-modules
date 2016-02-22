@@ -66,7 +66,7 @@ class Application
             $services->get('config')
         ));
         $services->setAllowOverride(false);
-
+        $config = $services->get('config');
         $services->configure($config['container']);
 
         $app = $services->get('application');
