@@ -7,7 +7,7 @@
  * @license GNU GPLv3 http://www.gnu.org/licenses/gpl-3.0-standalone.html
  */
 
-namespace Knlv\Slim\Modules;
+namespace Knlv\Slim\Modules\Utils;
 
 use InvalidArgumentException;
 use Slim\App;
@@ -36,6 +36,10 @@ trait AddMiddlewareTrait
 
             return $mw;
         }, $middleware);
+
+        $middleware = array_filter($middleware, function ($mw) {
+            return $mw['handler'] !== null;
+        });
 
         $middleware = $this->prioritize($middleware, true);
 

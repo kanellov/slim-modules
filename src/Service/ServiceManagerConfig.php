@@ -10,11 +10,13 @@
 
 namespace Knlv\Slim\Modules\Service;
 
+use Interop\Container\ContainerInterface;
 use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
 use Zend\ServiceManager\Config;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\ServiceManager;
+use Zend\Stdlib\ArrayUtils;
 
 class ServiceManagerConfig extends Config
 {
@@ -43,6 +45,8 @@ class ServiceManagerConfig extends Config
         'response'         => 'Knlv\Slim\Modules\Service\ResponseFactory',
         'errorHandler'     => 'Knlv\Slim\Modules\Service\ErrorHandlerFactory',
         'callableResolver' => 'Knlv\Slim\Modules\Service\CallableResolverFactory',
+        'application'      => 'Knlv\Slim\Modules\Service\SlimAppFactory',
+        'modules'          => 'Knlv\Slim\Modules\Service\ModulesFactory',
     ];
     /**
      * Abstract factories
@@ -60,13 +64,9 @@ class ServiceManagerConfig extends Config
         'Zend\ServiceManager\ServiceLocatorInterface' => 'services',
         'Zend\ServiceManager\ServiceManager'          => 'services',
         'Slim\Interfaces\RouterInterface'             => 'router',
-        'Slim\Router'                                 => 'router',
         'Slim\Interfaces\Http\EnvironmentInterface'   => 'environment',
-        'Slim\Http\Environment'                       => 'environment',
         'Psr\Http\Message\ServerRequestInterface'     => 'request',
-        'Slim\Http\Request'                           => 'request',
         'Psr\Http\Message\ResponseInterface'          => 'response',
-        'Slim\Http\Response'                          => 'response',
     ];
     /**
      * Shared services
@@ -95,22 +95,22 @@ class ServiceManagerConfig extends Config
     public function __construct(array $configuration = [])
     {
         $this->initializers = [
-            'EventManagerAwareInitializer' => function ($instance, ServiceLocatorInterface $services) {
+            'EventManagerAwareInitializer' => function (ContainerInterface $services, $instance) {
                 if ($instance instanceof EventManagerAwareInterface) {
                     $events = $instance->getEventManager();
                     if ($events instanceof EventManagerInterface) {
-                        $events->setSharedManager($services->get('SharedEventManager'));
+                        $events->setSharedManager($services->get('sharedEvents'));
                     } else {
-                        $instance->setEventManager($services->get('EventManager'));
+                        $instance->setEventManager($services->get('events'));
                     }
                 }
             },
-            'ServiceManagerAwareInitializer' => function ($instance, ServiceLocatorInterface $services) {
+            'ServiceManagerAwareInitializer' => function (ContainerInterface $services, $instance) {
                 if ($services instanceof ServiceManager && $instance instanceof ServiceManagerAwareInterface) {
                     $instance->setServiceManager($services);
                 }
             },
-            'ServiceLocatorAwareInitializer' => function ($instance, ServiceLocatorInterface $services) {
+            'ServiceLocatorAwareInitializer' => function (ContainerInterface $services, $instance) {
                 if ($instance instanceof ServiceLocatorAwareInterface) {
                     $instance->setServiceLocator($services);
                 }

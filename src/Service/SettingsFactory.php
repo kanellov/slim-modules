@@ -12,6 +12,7 @@ namespace Knlv\Slim\Modules\Service;
 
 use Interop\Container\ContainerInterface;
 use Slim\Collection;
+use Zend\Stdlib\ArrayUtils;
 
 class SettingsFactory
 {
@@ -30,6 +31,11 @@ class SettingsFactory
 
     public function __invoke(ContainerInterface $sm)
     {
-        return new Collection(self::$defaultSettings);
+        $config   = $sm->get('config');
+        $settings = isset($config['settings']) ? $config['settings'] : [];
+
+        return new Collection(
+            ArrayUtils::merge(self::$defaultSettings, $settings)
+        );
     }
 }
