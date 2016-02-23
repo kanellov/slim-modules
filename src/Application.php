@@ -10,6 +10,8 @@
 namespace Knlv\Slim\Modules;
 
 use Knlv\Slim\Modules\Service\ServiceManagerConfig;
+use Knlv\Slim\Modules\Utils\AddMiddleware;
+use Knlv\Slim\Modules\Utils\AddRoutes;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\ArrayUtils;
 
@@ -72,7 +74,7 @@ class Application
         $app = $services->get('application');
         $events->trigger('app.bootstrap', $app);
 
-        return $app;
+        return self::configureApp($app, $config);
     }
 
     private static function loadSettings($appConfig)
@@ -88,5 +90,20 @@ class Application
         }
 
         return [];
+    }
+
+    private static function configureApp($app, $config)
+    {
+        // set routes
+        $routesCfg = isset($config['routes']) ? $config['routes'] : [];
+        $addRoutes = new AddRoutes();
+        $addRoutes($app, $routesCfg);
+
+        // set middleware
+        $middlewareCfg = isset($config['middleware']) ? $config['middleware'] : [];
+        $addMiddleware = new AddMiddleware();
+        $addMiddleware($app, $middlewareCfg);
+
+        return $app;
     }
 }

@@ -17,20 +17,6 @@ class SlimAppFactory
 {
     public function __invoke(ContainerInterface $sm)
     {
-        $config = $sm->get('config');
-
-        $app = new App($sm);
-
-        // set routes
-        $routesCfg = isset($config['routes']) ? $config['routes'] : [];
-        $addRoutes = new \Knlv\Slim\Modules\Utils\AddRoutes();
-        $addRoutes($app, $routesCfg);
-
-        // set middleware
-        $middlewareCfg = isset($config['middleware']) ? $config['middleware'] : [];
-        $addMiddleware = new \Knlv\Slim\Modules\Utils\AddMiddleware();
-        $addMiddleware($app, $middlewareCfg);
-
-        return $app;
+        return new App($sm);
     }
 }
