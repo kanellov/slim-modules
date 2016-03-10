@@ -31,35 +31,39 @@ class AddRoutes
         if (array_values($routes) === $routes) {
             throw new InvalidArgumentException('Routes array must have route names as keys');
         }
-
         $this->container = $app->getContainer();
         $routes          = $this->prioritize($routes);
-        $that            = $this;
 
+        $this->addRoutes($app, $routes);
+
+        return $app;
+    }
+
+    private function addRoutes(App $app, array $routes, $parentPattern = '')
+    {
+        $that = $this;
         foreach ($routes as $name => $config) {
             if (!isset($config['pattern'])) {
                 throw new InvalidArgumentException('Route must have a pattern');
             }
 
-            if (array_key_exists($config['pattern'], $this->defined)) {
+            if (array_key_exists($parentPattern . $config['pattern'], $this->defined)) {
                 continue;
             }
 
             if (isset($config['children']) && is_array($config['children'])) {
                 $route = $app->group($config['pattern'], function () use ($that, $app, $config) {
-                    $that($app, $config['children']);
+                    call_user_func([$that, 'addRoutes'], $app, $config['children'], $config['pattern']);
                 });
             } else {
                 $route = $this->createRoute($app, $config);
                 $route->setName($name);
-                $this->defined[$config['pattern']] = 1;
+                $this->defined[$parentPattern . $config['pattern']] = 1;
             }
             if (isset($config['middleware']) && is_array($config['middleware'])) {
                 $this->addMiddleware($route, $config['middleware']);
             }
         }
-
-        return $app;
     }
 
     private function createRoute(App $app, array $config)
