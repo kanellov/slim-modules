@@ -47,18 +47,19 @@ class AddRoutes
                 throw new InvalidArgumentException('Route must have a pattern');
             }
 
-            if (array_key_exists($parentPattern . $config['pattern'], $this->defined)) {
-                continue;
+            $wholePattern = $parentPattern . $config['pattern'];
+
+            if (!array_key_exists($wholePattern, $this->defined)) {
+                $this->defined[$wholePattern] = 1;
             }
 
             if (isset($config['children']) && is_array($config['children'])) {
-                $route = $app->group($config['pattern'], function () use ($that, $app, $config) {
-                    call_user_func([$that, 'addRoutes'], $app, $config['children'], $config['pattern']);
+                $route = $app->group($config['pattern'], function () use ($that, $app, $config, $wholePattern) {
+                    call_user_func([$that, 'addRoutes'], $app, $config['children'], $that->defined[$wholePattern]);
                 });
             } else {
                 $route = $this->createRoute($app, $config);
                 $route->setName($name);
-                $this->defined[$parentPattern . $config['pattern']] = 1;
             }
             if (isset($config['middleware']) && is_array($config['middleware'])) {
                 $this->addMiddleware($route, $config['middleware']);
