@@ -12,6 +12,9 @@ namespace Knlv\Slim\Modules;
 use Knlv\Slim\Modules\Service\ServiceManagerConfig;
 use Knlv\Slim\Modules\Utils\AddMiddleware;
 use Knlv\Slim\Modules\Utils\AddRoutes;
+use Slim\App;
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\ResponseCollection;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\ArrayUtils;
 
@@ -24,12 +27,12 @@ class Application
                 ? $configuration['container'] : []
         );
         $services = new ServiceManager($servicesCfg->toArray());
-        /* @var $services \Zend\ServiceManager\ServiceManager */
+        /* @var $services ServiceManager */
         $services->setService('appConfig', $configuration);
 
         $events = $services->get('events');
-        /* @var $events \Zend\EventManager\EventManagerInterface */
-        $events->setIdentifiers([\Slim\App::class]);
+        /* @var $events EventManagerInterface */
+        $events->setIdentifiers([App::class]);
         $services->setService('appEvents', $events);
 
         $cacheConfig = isset($configuration['config_cache'])
@@ -57,7 +60,7 @@ class Application
         $services->setService('config', $config);
 
         $result = $events->trigger('app.config', $services);
-        /* @var $result \Zend\EventManager\ResponseCollection */
+        /* @var $result ResponseCollection */
 
         $services->setAllowOverride(true);
         $services->setService('config', array_reduce(

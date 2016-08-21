@@ -11,127 +11,117 @@
 namespace Knlv\Slim\Modules\Service;
 
 use Interop\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\Handlers\NotAllowed;
+use Slim\Handlers\NotFound;
+use Slim\Handlers\Strategies\RequestResponse;
+use Slim\Interfaces\Http\EnvironmentInterface;
+use Slim\Interfaces\RouterInterface;
+use Slim\Router;
 use Zend\EventManager\EventManagerAwareInterface;
 use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\SharedEventManager;
+use Zend\EventManager\SharedEventManagerInterface;
 use Zend\ServiceManager\Config;
 use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\ArrayUtils;
+use Zend\Stdlib\ResponseInterface;
 
 class ServiceManagerConfig extends Config
 {
-    /**
-     * Services that can be instantiated without factories
-     *
-     * @var array
-     */
-    protected $invokables = [
-        'sharedEvents'      => 'Zend\EventManager\SharedEventManager',
-        'router'            => 'Slim\Router',
-        'foundHandler'      => 'Slim\Handlers\Strategies\RequestResponse',
-        'notFoundHandler'   => 'Slim\Handlers\NotFound',
-        'notAllowedHandler' => 'Slim\Handlers\NotAllowed',
+    protected $config = [
+        'abstract_factories' => [],
+        'aliases'            => [
+            'EventManagerInterface'            => 'events',
+            EventManagerInterface::class       => 'events',
+            'SharedEventManagerInterface'      => 'sharedEvents',
+            SharedEventManagerInterface::class => 'sharedEvents',
+            'ServiceLocatorInterface'          => 'services',
+            ServiceLocatorInterface::class     => 'services',
+            'ContainerInterface'               => 'services',
+            ContainerInterface::class          => 'services',
+            'ServiceManager'                   => 'services',
+            ServiceManager::class              => 'services',
+            RouterInterface::class             => 'router',
+            EnvironmentInterface::class        => 'environment',
+            ServerRequestInterface::class      => 'request',
+            ResponseInterface::class           => 'response',
+            'EventManager'                     => 'events',
+        ],
+        'delegators' => [],
+        'factories'  => [
+            'settings'         => SettingsFactory::class,
+            'events'           => EventsFactory::class,
+            'environment'      => EnvironmentFactory::class,
+            'request'          => RequestFactory::class,
+            'response'         => ResponseFactory::class,
+            'errorHandler'     => ErrorHandlerFactory::class,
+            'callableResolver' => CallableResolverFactory::class,
+            'application'      => SlimAppFactory::class,
+            'modules'          => ModulesFactory::class,
+        ],
+        'lazy_services' => [],
+        'initializers'  => [],
+        'invokables'    => [],
+        'services'      => [],
+        'shared'        => [
+            'events' => false,
+        ],
     ];
-    /**
-     * Service factories
-     *
-     * @var array
-     */
-    protected $factories = [
-        'settings'         => 'Knlv\Slim\Modules\Service\SettingsFactory',
-        'events'           => 'Knlv\Slim\Modules\Service\EventsFactory',
-        'environment'      => 'Knlv\Slim\Modules\Service\EnvironmentFactory',
-        'request'          => 'Knlv\Slim\Modules\Service\RequestFactory',
-        'response'         => 'Knlv\Slim\Modules\Service\ResponseFactory',
-        'errorHandler'     => 'Knlv\Slim\Modules\Service\ErrorHandlerFactory',
-        'callableResolver' => 'Knlv\Slim\Modules\Service\CallableResolverFactory',
-        'application'      => 'Knlv\Slim\Modules\Service\SlimAppFactory',
-        'modules'          => 'Knlv\Slim\Modules\Service\ModulesFactory',
-    ];
-    /**
-     * Abstract factories
-     *
-     * @var array
-     */
-    protected $abstractFactories = [];
-    /**
-     * Aliases
-     *
-     * @var array
-     */
-    protected $aliases = [
-        'Zend\EventManager\EventManagerInterface'     => 'events',
-        'Zend\ServiceManager\ServiceLocatorInterface' => 'services',
-        'Zend\ServiceManager\ServiceManager'          => 'services',
-        'Slim\Interfaces\RouterInterface'             => 'router',
-        'Slim\Interfaces\Http\EnvironmentInterface'   => 'environment',
-        'Psr\Http\Message\ServerRequestInterface'     => 'request',
-        'Psr\Http\Message\ResponseInterface'          => 'response',
-    ];
-    /**
-     * Shared services
-     *
-     * Services are shared by default; this is primarily to indicate services
-     * that should NOT be shared
-     *
-     * @var array
-     */
-    protected $shared = [
-        'events' => false,
-    ];
-    /**
-     * Delegators
-     *
-     * @var array
-     */
-    protected $delegators = [];
-    /**
-     * Initializers
-     *
-     * @var array
-     */
-    protected $initializers = [];
 
-    public function __construct(array $configuration = [])
+    public function __construct(array $config = [])
     {
-        $this->initializers = [
-            'EventManagerAwareInitializer' => function (ContainerInterface $services, $instance) {
-                if ($instance instanceof EventManagerAwareInterface) {
-                    $events = $instance->getEventManager();
-                    if ($events instanceof EventManagerInterface) {
-                        $events->setSharedManager($services->get('sharedEvents'));
-                    } else {
-                        $instance->setEventManager($services->get('events'));
-                    }
+        $this->config['factories']['services'] = function ($container) {
+            return $container;
+        };
+        $this->config['factories']['sharedEvents'] = function () {
+            return new SharedEventManager();
+        };
+        $this->config['factories']['router'] = function () {
+            return new Router();
+        };
+        $this->config['factories']['foundHandler'] = function () {
+            return new RequestResponse();
+        };
+        $this->config['factories']['notFoundHandler'] = function () {
+            return new NotFound();
+        };
+        $this->config['factories']['notAllowedHandler'] = function () {
+            return new NotAllowed();
+        };
+        $this->config['initializers']['EventManagerAwareInitialized'] = function ($first, $second) {
+                if ($first instanceof ContainerInterface) {
+                    $container = $first;
+                    $instance  = $second;
+                } else {
+                    $container = $second;
+                    $instance  = $first;
                 }
-            },
-            'ServiceManagerAwareInitializer' => function (ContainerInterface $services, $instance) {
-                if ($services instanceof ServiceManager && $instance instanceof ServiceManagerAwareInterface) {
-                    $instance->setServiceManager($services);
+
+                if (! $instance instanceof EventManagerAwareInterface) {
+                    return;
                 }
-            },
-            'ServiceLocatorAwareInitializer' => function (ContainerInterface $services, $instance) {
-                if ($instance instanceof ServiceLocatorAwareInterface) {
-                    $instance->setServiceLocator($services);
+
+                $eventManager = $instance->getEventManager();
+
+                if ($eventManager instanceof EventManagerInterface
+                    && $eventManager->getSharedManager() instanceof SharedEventManagerInterface
+                ) {
+                    return;
                 }
-            },
-        ];
+
+                $instance->setEventManager($container->get('events'));
+            };
 
         $this->factories['services'] = function (ServiceLocatorInterface $serviceLocator) {
             return $serviceLocator;
         };
 
-        parent::__construct(ArrayUtils::merge(
-            [
-                'invokables'         => $this->invokables,
-                'factories'          => $this->factories,
-                'abstract_factories' => $this->abstractFactories,
-                'aliases'            => $this->aliases,
-                'shared'             => $this->shared,
-                'delegators'         => $this->delegators,
-                'initializers'       => $this->initializers,
-            ],
-            $configuration
-        ));
+        if (method_exists($this, 'getAllowOverride')) {
+            $config = ArrayUtils::merge($this->config, $config);
+        }
+
+        parent::__construct($config);
     }
 }
